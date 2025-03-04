@@ -17,7 +17,7 @@ body {
     -ms-overflow-style: none; /* For IE/Edge */
 }
 
-.faucet-dropdown {
+.food-dropdown {
     width: 100%;
     padding: 12px;
     border: none;
@@ -56,22 +56,6 @@ body {
     display: none;
 }
 
-
-/* Fixing the input box */
-.faucet-input {
-    width: 90%;
-    padding: 12px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    text-align: center;
-    outline: none;
-    background: #2a2a40;
-    color: white;
-    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.3),
-                inset -5px -5px 10px rgba(255, 255, 255, 0.05);
-}
-
 /* Warning message */
 #warningMessage {
     color: red;
@@ -85,7 +69,7 @@ body {
     display: none;
 }
 
-/* Claim Faucet Button */
+/* Claim food Button */
 .claim-button {
     background: linear-gradient(145deg, #6A0DAD, #1E90FF);
     color: white;
@@ -110,7 +94,7 @@ body {
     transform: translateY(2px) scale(0.98);
     box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
 }
-.faucet-container {
+.food-container {
     width: 80%;
     max-width: 400px;
     background: linear-gradient(145deg, #1a1a2e, #22223b);
@@ -125,7 +109,7 @@ body {
 }
 
 /* Fixing the input box */
-.faucet-input {
+.food-input {
     width: 90%;
     padding: 12px;
     border: none;
@@ -187,11 +171,11 @@ canvas {
 
 
 /* 🔵 Existing Button Styles */
-.telegram-container {
+.track-container {
     margin-top: 10px;
 }
 
-.telegram-button {
+.track-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -208,12 +192,12 @@ canvas {
     box-shadow: 4px 4px 10px rgba(0, 136, 204, 0.4);
 }
 
-.telegram-button:hover {
+.track-button:hover {
     transform: translateY(-3px);
     background: linear-gradient(145deg, #00aaff, #0077cc);
 }
 
-.telegram-button:active {
+.track-button:active {
     transform: translateY(2px) scale(0.98);
     box-shadow: 0px 0px 15px rgba(0, 136, 204, 0.5);
 }
@@ -348,8 +332,8 @@ canvas {
     max-height: 180px; /* Keeps image size balanced */
 }
 
-/* Mint Button - Fully animated */
-.mint-button {
+/* refresh Button - Fully animated */
+.refresh-button {
     background: linear-gradient(145deg, #6A0DAD, #1E90FF);
     color: white;
     font-size: 16px;
@@ -362,13 +346,13 @@ canvas {
 }
 
 /* Hover Effect */
-.mint-button:hover {
+.refresh-button:hover {
     transform: translateY(-5px);
     background: linear-gradient(145deg, #7B1FA2, #1C86EE);
 }
 
 /* Click Animation */
-.mint-button:active {
+.refresh-button:active {
     transform: translateY(2px) scale(0.98);
     box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
 }
