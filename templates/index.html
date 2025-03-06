@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory">
 
 </head>
 <body>
@@ -60,7 +59,7 @@
                         <p> Potatoes - 5, Rotten Potatoes - 3</p>
                         <p> Carrot - 12, Freaky Carrots - 6</p>
                     </div>
-                    <img src="food.jpg" alt="Food Inventory">
+                    <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory" alt="Food Inventory">
                 </div>
             </div>
         
@@ -95,7 +94,7 @@
         
         <div class="card-container">
             <div class="card">
-                <img src="food.jpg" alt="NFT Image">
+                <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory" alt="Food Image">
                 <p>Click refresh to take update the inventory picture</p>
                 <button class="refresh-button">Refresh</button>
             </div>
