@@ -18,23 +18,24 @@ for (let i = 0; i < numDots; i++) {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const refreshButton = document.querySelector(".refresh-button");
+document.querySelector(".refresh-button").addEventListener("click", async () => {
+    try {
+        // ✅ Tell app.py to trigger client.py
+        let response = await fetch("/trigger_client", { method: "POST" });
+        let result = await response.json();
+        console.log(result.message);
 
-    refreshButton.addEventListener("click", function () {
-        fetch("/refresh_image", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log("✅ Image refreshed successfully.");
-                    setTimeout(() => location.reload(), 1000); // Reload page after 1s
-                } else {
-                    console.error("❌ Error refreshing image:", data.error);
-                }
-            })
-            .catch(error => console.error("❌ Network error:", error));
-    });
+        if (result.success) {
+            // ✅ Refresh image after client.py uploads it
+            setTimeout(() => {
+                document.querySelector(".card img").src = "/get_image?" + new Date().getTime();
+            }, 3000);  // Delay to ensure upload completes
+        }
+    } catch (error) {
+        console.error("❌ Error triggering client.py:", error);
+    }
 });
+
 
 function drawDots() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
