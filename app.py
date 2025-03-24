@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import subprocess
+import requests
 
 app = Flask(__name__)
 
@@ -11,6 +12,8 @@ IMAGE_PATH = os.path.join(STATIC_FOLDER, "food.jpg")
 # ✅ Ensure static folder exists
 os.makedirs(STATIC_FOLDER, exist_ok=True)
 
+# ✅ Your local PC's Flask server running client.py
+CLIENT_URL = "http://172.20.180.218:5001/trigger_upload"
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -22,7 +25,7 @@ def upload_image():
         return "❌ No file found", 400
 
     file = request.files["file"]
-    
+
     if file.filename == "":
         return "❌ No selected file", 400
 
@@ -55,14 +58,20 @@ def push_to_github():
     except Exception as e:
         print(f"❌ GitHub push failed: {e}")
 
-# ✅ New API Endpoint to trigger client.py for capturing & uploading image
+# ✅ API Endpoint to trigger client.py on the local machine
 @app.route("/trigger_client", methods=["POST"])
 def trigger_client():
     try:
-        subprocess.run(["python", "client.py"], check=True)
-        return jsonify({"success": True, "message": "✅ client.py executed successfully!"})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"success": False, "error": str(e)})
+        # ✅ Send a request to client.py running on the local machine
+        response = requests.post(CLIENT_URL)
+
+        if response.status_code == 200:
+            return jsonify({"success": True, "message": "✅ client.py triggered successfully!"})
+        else:
+            return jsonify({"success": False, "error": f"Response {response.status_code}: {response.text}"}), 500
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"success": False, "error": f"❌ Failed to trigger client.py: {e}"}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
