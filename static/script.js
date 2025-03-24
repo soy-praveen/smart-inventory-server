@@ -18,6 +18,24 @@ for (let i = 0; i < numDots; i++) {
     });
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    const refreshButton = document.querySelector(".refresh-button");
+
+    refreshButton.addEventListener("click", function () {
+        fetch("/refresh_image", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("✅ Image refreshed successfully.");
+                    setTimeout(() => location.reload(), 1000); // Reload page after 1s
+                } else {
+                    console.error("❌ Error refreshing image:", data.error);
+                }
+            })
+            .catch(error => console.error("❌ Network error:", error));
+    });
+});
+
 function drawDots() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
