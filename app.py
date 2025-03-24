@@ -55,5 +55,14 @@ def push_to_github():
     except Exception as e:
         print(f"❌ GitHub push failed: {e}")
 
+# ✅ New API Endpoint to trigger client.py for capturing & uploading image
+@app.route("/trigger_client", methods=["POST"])
+def trigger_client():
+    try:
+        subprocess.run(["python", "client.py"], check=True)
+        return jsonify({"success": True, "message": "✅ client.py executed successfully!"})
+    except subprocess.CalledProcessError as e:
+        return jsonify({"success": False, "error": str(e)})
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
