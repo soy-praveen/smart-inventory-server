@@ -9,9 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Averia+Serif+Libre:wght@300;400;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </head>
 <body>
     <header>
@@ -24,54 +23,31 @@
                             <stop offset="100%" stop-color="#1E90FF"/>
                         </linearGradient>
                     </defs>
-                    <text x="10" y="60" font-family="'Averia Serif Libre', serif" font-size="50" font-weight="700" id="k">
+                    <text x="10" y="60" font-family="'Averia Serif Libre', serif" font-size="50" font-weight="700">
                         <tspan fill="url(#gradient)" dx="25">K</tspan><tspan fill="white" dx="2">ryple</tspan>
                     </text>
                 </svg>
             </a>
             <div class="welcome">
-                <span>Track your inventory, and get dish suggestions from Gemini!</span>
+                <span>Track your inventory, and get dish suggestions.</span>
             </div>
-            <div class="track-container">
-                <button class="track-button" onclick="togglePopup()">
-                    Track Inventory
-                </button>
-            </div>
-        
-            <!-- Glassmorphic Popup -->
-            <div id="inventory-popup" class="popup-container">
-                <div class="popup-content">
-                    <span class="close-btn" onclick="togglePopup()">&times;</span>
-                    <h2>Inventory Status</h2>
-                    <div class="inventory-section">
-                        <h3>Fruits Present</h3>
-                        <p>Apple, Banana</p>
-                        <h3>Vegetables Present</h3>
-                        <p>Carrot, Potato</p>
-                    </div>
-                    <div class="inventory-section">
-                        <h3>Fruits Count</h3>
-                        <p> Apple - 10, Rotten Apple - 3</p>
-                        <p> Banana - 5, Rotten Banana - 1</p>
-                    </div>
-                    <div class="inventory-section">
-                        <h3>Vegetables Count</h3>
-                        <p> Potatoes - 5, Rotten Potatoes - 3</p>
-                        <p> Carrot - 12, Freaky Carrots - 6</p>
-                    </div>
-                    <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory" alt="Food Inventory">
-                </div>
-            </div>
-        
-            <script>
-                function togglePopup() {
-                    let popup = document.getElementById("inventory-popup");
-                    popup.classList.toggle("active");
-                    document.body.classList.toggle("blurred"); // Blur everything behind
-                }
-            </script>
         </div>
-        
+
+        <!-- 🔹 Inventory Card (Popup) Always Visible -->
+        <div class="popup-container active">
+            <div class="popup-content">
+                <h2>Inventory</h2>
+                
+                <!-- 🔥 Dynamic Inventory Data (Updated via script.js) -->
+                <div class="inventory-section" id="inventoryData">
+                    <p>Loading inventory...</p>
+                </div>
+
+                <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory">
+            </div>
+        </div>
+
+        <!-- 🔹 Dish Generation Section -->
         <div class="food-container">
             <select id="foodCategory" class="food-dropdown">
                 <option value="" disabled selected>Select Food Category</option>
@@ -88,22 +64,12 @@
             </select>
             <button class="claim-button" id="generateButton">Generate Dishes</button>
         </div>
-        
+
         <div id="dishesContainer" class="hidden"></div>
-        
-        
-        <div class="card-container">
-            <div class="card">
-                <img src="{{ url_for('static', filename='food.jpg') }}" alt="Food Inventory" alt="Food Image">
-                <p>Click refresh to take update the inventory picture</p>
-                <button class="refresh-button">Refresh</button>
-            </div>
-        </div>
-        
     </header>
     
     <canvas id="backgroundCanvas"></canvas>
-    <script src="script.js"></script>
-    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 </html>
