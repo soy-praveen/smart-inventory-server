@@ -30,7 +30,7 @@ def get_inventory():
 IMAGE_PATH = "food.jpg"
 
 # ✅ Configure Google Gemini AI
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # 🔥 Load from environment variable
+GEMINI_API_KEY = "AIzaSyBCWOXDVefsY7f8Q1d9N1HN3Mo6RA1b5eU"  # 🔥 Load from environment variable
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
