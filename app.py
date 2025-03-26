@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
 import os
-import base64
 import google.generativeai as genai
 
 app = Flask(__name__)
@@ -26,11 +25,8 @@ def update_inventory():
 def get_inventory():
     return jsonify(inventory_data)
 
-# ✅ Image Path
-IMAGE_PATH = "food.jpg"
-
 # ✅ Configure Google Gemini AI
-GEMINI_API_KEY = "AIzaSyBCWOXDVefsY7f8Q1d9N1HN3Mo6RA1b5eU"  # 🔥 Load from environment variable
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # 🔥 Load from environment variable
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -42,7 +38,7 @@ else:
 def index():
     return render_template("index.html")
 
-# ✅ Generate Dish Suggestions from Gemini AI
+# ✅ Generate Dish Suggestions from Gemini AI (without image)
 @app.route("/generate_dishes", methods=["POST"])
 def generate_dishes():
     global inventory_data
@@ -56,21 +52,14 @@ def generate_dishes():
         return jsonify({"success": False, "error": "❌ No category provided"}), 400
 
     # ✅ Extract only "freshness above 80%" items
-    available_ingredients = [
-        item for items in inventory_data.values()
-        for item, freshness in items.items()
-        if "freshness above 80%" in freshness and freshness["freshness above 80%"] > 0
-    ]
+    available_ingredients = []
+    for category_name, items in inventory_data.items():
+        for item, freshness_levels in items.items():
+            if "freshness above 80%" in freshness_levels and freshness_levels["freshness above 80%"] > 0:
+                available_ingredients.append(item)
 
     if not available_ingredients:
         return jsonify({"success": False, "error": "❌ No fresh ingredients available"}), 400
-
-    # ✅ Convert Image to Base64
-    try:
-        with open(IMAGE_PATH, "rb") as image_file:
-            image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
-    except FileNotFoundError:
-        return jsonify({"success": False, "error": "❌ Image file not found"}), 500
 
     # ✅ New Prompt for Gemini API
     prompt = (
@@ -80,7 +69,7 @@ def generate_dishes():
     )
 
     try:
-        response = model.generate_content([prompt, {"mime_type": "image/jpeg", "data": image_base64}])
+        response = model.generate_content(prompt)
         if response and response.text:
             dishes = response.text.strip().split("\n")
             return jsonify({"success": True, "dishes": dishes})
