@@ -18,22 +18,20 @@ for (let i = 0; i < numDots; i++) {
     });
 }
 
-document.querySelector(".refresh-button").addEventListener("click", async () => {
-    try {
-        // ✅ Tell app.py to trigger client.py
-        let response = await fetch("/trigger_client", { method: "POST" });
-        let result = await response.json();
-        console.log(result.message);
-
-        if (result.success) {
-            // ✅ Refresh image after client.py uploads it
-            setTimeout(() => {
-                document.querySelector(".card img").src = "/get_image?" + new Date().getTime();
-            }, 3000);  // Delay to ensure upload completes
-        }
-    } catch (error) {
-        console.error("❌ Error triggering client.py:", error);
-    }
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelector(".refresh-button").addEventListener("click", function () {
+        fetch("/trigger_client", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                if (data.success) {
+                    setTimeout(() => {
+                        document.querySelector(".card img").src = "/get_image?" + new Date().getTime();
+                    }, 2000);
+                }
+            })
+            .catch(error => console.error("❌ Error:", error));
+    });
 });
 
 
@@ -72,77 +70,81 @@ window.addEventListener("resize", () => {
 
 animate();
 document.addEventListener("DOMContentLoaded", function () {
+    fetchInventoryData(); // Load inventory when page loads
+
+    // Function to fetch inventory data from backend
+    function fetchInventoryData() {
+        fetch("/get_inventory")
+            .then(response => response.json())
+            .then(data => {
+                updateInventoryUI(data);
+            })
+            .catch(error => console.error("Error fetching inventory:", error));
+    }
+
+    // Function to update UI with dynamic inventory
+    function updateInventoryUI(data) {
+        const inventoryContainer = document.querySelector(".popup-content");
+
+        let htmlContent = `<h2>Inventory</h2>`;
+
+        // ✅ Display Fruits
+        if (data.fruits && Object.keys(data.fruits).length > 0) {
+            htmlContent += `<div class="inventory-section"><h3>Fruits Count</h3>`;
+            for (let fruit in data.fruits) {
+                htmlContent += `<p>${fruit}: Fresh (>80%) - ${data.fruits[fruit]["freshness above 80%"]}, Medium (>50%) - ${data.fruits[fruit]["freshness above 50%"]}, Rotten - ${data.fruits[fruit]["cannot be used for cooking"]}</p>`;
+            }
+            htmlContent += `</div>`;
+        }
+
+        // ✅ Display Vegetables
+        if (data.vegetables && Object.keys(data.vegetables).length > 0) {
+            htmlContent += `<div class="inventory-section"><h3>Vegetables Count</h3>`;
+            for (let vegetable in data.vegetables) {
+                htmlContent += `<p>${vegetable}: Fresh (>80%) - ${data.vegetables[vegetable]["freshness above 80%"]}, Medium (>50%) - ${data.vegetables[vegetable]["freshness above 50%"]}</p>`;
+            }
+            htmlContent += `</div>`;
+        }
+
+        inventoryContainer.innerHTML = htmlContent;
+    }
+
+    // Refresh inventory data every 5 seconds
+    setInterval(fetchInventoryData, 5000);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
     const generateButton = document.getElementById("generateButton");
     const foodCategory = document.getElementById("foodCategory");
     const dishesContainer = document.getElementById("dishesContainer");
 
-    const dishes = {
-        indian: [
-            "Butter Chicken - Rich, creamy tomato-based curry.",
-            "Paneer Tikka - Grilled cottage cheese with spices.",
-            "Dal Makhani - Lentils cooked in butter and cream.",
-            "Biryani - Spiced rice with meat or vegetables.",
-            "Aloo Paratha - Stuffed flatbread served with yogurt.",
-            "Chole Bhature - Chickpea curry with fried bread.",
-            "Dosa - Crispy rice pancake with chutneys.",
-            "Pani Puri - Crispy shells filled with tangy water.",
-            "Rogan Josh - Kashmiri-style lamb curry.",
-            "Samosa - Deep-fried pastry with spicy filling."
-        ],
-        chinese: [
-            "Kung Pao Chicken - Stir-fried chicken with peanuts.",
-            "Spring Rolls - Crispy rolls stuffed with veggies.",
-            "Fried Rice - Wok-tossed rice with vegetables.",
-            "Sweet and Sour Pork - Crispy pork with sweet sauce.",
-            "Mapo Tofu - Spicy tofu with minced meat.",
-            "Chow Mein - Stir-fried noodles with vegetables.",
-            "Hot and Sour Soup - Tangy, spicy soup with mushrooms.",
-            "Dumplings - Steamed or fried stuffed delights.",
-            "Peking Duck - Roasted duck with crispy skin.",
-            "Sesame Chicken - Sweet, crispy chicken with sesame seeds."
-        ],
-        italian: [
-            "Margherita Pizza - Tomato, mozzarella, and basil.",
-            "Pasta Carbonara - Creamy pasta with bacon and egg.",
-            "Lasagna - Layered pasta with meat sauce and cheese.",
-            "Risotto - Creamy rice dish with Parmesan.",
-            "Bruschetta - Toasted bread with tomato topping.",
-            "Tiramisu - Coffee-flavored Italian dessert.",
-            "Minestrone Soup - Vegetable soup with pasta.",
-            "Pesto Pasta - Pasta tossed in basil sauce.",
-            "Arancini - Fried rice balls with cheese filling.",
-            "Osso Buco - Slow-cooked veal shanks."
-        ]
-        // Add more categories similarly
-    };
-
     generateButton.addEventListener("click", function () {
         const selectedCategory = foodCategory.value;
-    
-        if (generateButton.textContent === "Generate") {
-            if (!selectedCategory) {
-                alert("Please select a food category!");
-                return;
-            }
-    
-            // Hide dropdown and show dish list
-            foodCategory.style.display = "none";
-            generateButton.textContent = "Change";
-            dishesContainer.innerHTML = "<h3>Dishes</h3>";
-            dishes[selectedCategory].forEach(dish => {
-                const dishItem = document.createElement("div");
-                dishItem.classList.add("dish-item");
-                dishItem.textContent = dish;
-                dishesContainer.appendChild(dishItem);
-            });
-            dishesContainer.classList.remove("hidden");
-        } else {
-            // Revert back to dropdown selection
-            foodCategory.style.display = "block";
-            generateButton.textContent = "Generate";
-            dishesContainer.innerHTML = ""; // Clear the dishes list
-            dishesContainer.classList.add("hidden");
+        if (!selectedCategory) {
+            alert("❌ Please select a food category first!");
+            return;
         }
+
+        fetch("/generate_dishes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category: selectedCategory })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // ✅ Display the generated dishes
+                dishesContainer.innerHTML = "<h2>Suggested Dishes:</h2>";
+                data.dishes.forEach(dish => {
+                    const dishElement = document.createElement("p");
+                    dishElement.textContent = dish;
+                    dishesContainer.appendChild(dishElement);
+                });
+                dishesContainer.classList.remove("hidden");
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error("Error fetching dishes:", error));
     });
-    
 });
