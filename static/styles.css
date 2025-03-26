@@ -104,8 +104,9 @@ body {
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3),
                 -10px -10px 30px rgba(255, 255, 255, 0.05);
     margin: 20px auto;
-    position: relative; /* Ensures no overlapping */
-    z-index: 10; /* Makes sure it's above other elements */
+    position: relative; /* Keep it in normal document flow */
+    z-index: 1; /* Lower than the popup */
+    margin-top: 30px; /* Adds space below inventory */
 }
 
 /* Fixing the input box */
@@ -218,10 +219,11 @@ canvas {
 /* 🌟 Glassmorphic Popup */
 .popup-container {
     display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative; /* Change from fixed to relative */
+    top: auto; /* Remove fixed positioning */
+    left: auto;
+    transform: none; /* Remove centering transform */
+    margin: 20px auto; /* Ensure spacing */
     width: 350px;
     max-height: 80vh; /* Prevent overflow */
     background: linear-gradient(135deg, rgba(138, 43, 226, 0.4), rgba(0, 0, 255, 0.4)); /* Purple-Blue Gradient */
@@ -234,6 +236,7 @@ canvas {
     font-family: Arial, sans-serif;
     z-index: 99;
     overflow-y: auto; /* Enable scrolling */
+    margin-bottom: 50px; /* Ensures there's space below the inventory */
 }
 .popup-container.active {
     display: block;
@@ -301,7 +304,13 @@ canvas {
 .welcome svg {
     margin-right: 4px; /* Small space between "K" and "irito!" */
 }
-
+.welcome,
+.track-container,
+.card-container {
+    position: relative;
+    z-index: 1; /* Ensures they're on top */
+    margin-top: 20px; /* Adds spacing */
+}
 /* Centering single card properly */
 .card-container {
     display: flex;
