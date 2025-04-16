@@ -83,53 +83,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Function to update UI with dynamic inventory
+    // Function to update UI with dynamic inventory
     function updateInventoryUI(data) {
-        const inventoryContainer = document.querySelector(".popup-content");
+        const inventoryContainer = document.getElementById("inventoryData");
 
         let htmlContent = `<h2>Inventory</h2>`;
 
-        // ✅ Display Fruits
-        if (data.fruits && Object.keys(data.fruits).length > 0) {
-            htmlContent += `<div class="inventory-section"><h3>Fruits Count</h3>`;
-            for (let fruit in data.fruits) {
-                const fruitData = data.fruits[fruit];
-                htmlContent += `<p>${fruit}: 
-                    Fresh (>80%) - ${fruitData["freshness above 80%"]}, 
-                    Medium (>50%) - ${fruitData["freshness above 50%"]}, 
-                    Rotten - ${fruitData["cannot be used for cooking"]}`;
-
-                // ✅ Include estimated rotting days if available
-                if ("estimated_rotting_days" in fruitData) {
-                    htmlContent += `, Est. Rot in ${fruitData["estimated_rotting_days"]} day(s)`;
-                }
-
-                htmlContent += `</p>`;
-            }
-            htmlContent += `</div>`;
+        // Check if the response contains the correct structure
+        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+            data.items.forEach(item => {
+                htmlContent += `<pre>${item}</pre><hr/>`;
+            });
+        } else {
+            htmlContent += "<p>No inventory data available.</p>";
         }
-
-        // ✅ Display Vegetables
-        if (data.vegetables && Object.keys(data.vegetables).length > 0) {
-            htmlContent += `<div class="inventory-section"><h3>Vegetables Count</h3>`;
-            for (let vegetable in data.vegetables) {
-                const vegData = data.vegetables[vegetable];
-                htmlContent += `<p>${vegetable}: 
-                    Fresh (>80%) - ${vegData["freshness above 80%"]}, 
-                    Medium (>50%) - ${vegData["freshness above 50%"]}`;
-
-                // ✅ Include estimated rotting days if available
-                if ("estimated_rotting_days" in vegData) {
-                    htmlContent += `, Est. Rot in ${vegData["estimated_rotting_days"]} day(s)`;
-                }
-
-                htmlContent += `</p>`;
-            }
-            htmlContent += `</div>`;
-        }
-
 
         inventoryContainer.innerHTML = htmlContent;
     }
+
+    
 
     // Refresh inventory data every 5 seconds
     setInterval(fetchInventoryData, 5000);
