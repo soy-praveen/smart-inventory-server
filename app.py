@@ -54,21 +54,19 @@ def generate_dishes():
     if not raw_inventory_data:
         return jsonify({"success": False, "error": "❌ No inventory data available"}), 400
 
-    # ✅ Prepare prompt with raw ESP inventory
+    # ✅ Join raw inventory into a prompt
     esp_data_string = "\n\n".join(raw_inventory_data)
 
-    with open(IMAGE_PATH, "rb") as image_file:
-        image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
-
     prompt = (
-        f"I have the following inventory sent from an ESP32 device with fruits/vegetables in raw format.\n"
-        f"Each item contains name, count, freshness %, and estimated rotting days.\n\n"
+        f"I have the following inventory of fruits and vegetables sent from an ESP32 device.\n"
+        f"Each item includes name, quantity, freshness percentage, and estimated rotting days.\n\n"
         f"{esp_data_string}\n\n"
-        f"Suggest 10 {category} cuisine dishes that can be made quickly using these items, focusing more on items that may rot sooner. Provide only dish names and short descriptions."
+        f"Please suggest 10 {category} cuisine dishes I can prepare quickly using these items, "
+        f"prioritizing those that are closer to rotting. Include only the dish names and a short description."
     )
 
     try:
-        response = model.generate_content([prompt, {"mime_type": "image/jpeg", "data": image_base64}])
+        response = model.generate_content(prompt)
 
         if response and response.text:
             dishes = [dish.strip() for dish in response.text.strip().split("\n") if dish.strip()]
@@ -79,6 +77,7 @@ def generate_dishes():
     except Exception as e:
         app.logger.error(f"Gemini API error: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=True)
