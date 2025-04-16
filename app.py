@@ -4,19 +4,25 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# ✅ Store inventory dynamically with rotting days
-inventory_data = {"fruits": {}, "vegetables": {}}
+# ✅ Store raw ESP data
+raw_inventory_data = []
 
 @app.route("/update_inventory", methods=["POST"])
 def update_inventory():
-    global inventory_data
+    global raw_inventory_data
     try:
         data = request.json
         if not data:
             return jsonify({"success": False, "error": "No data provided"}), 400
 
-        # ✅ Store data with optional "estimated_rotting_days"
-        inventory_data = data
+        # ✅ Extract inventory items from the raw string
+        raw_data_string = data.get("response", "")
+        if not raw_data_string:
+            return jsonify({"success": False, "error": "No inventory data provided"}), 400
+
+        # Split the raw data into individual items based on double newlines (\n\n)
+        raw_inventory_data = [item.strip() for item in raw_data_string.split("\n\n") if item.strip()]
+
         return jsonify({"success": True, "message": "Inventory updated successfully"}), 200
 
     except Exception as e:
@@ -24,13 +30,11 @@ def update_inventory():
 
 @app.route("/get_inventory", methods=["GET"])
 def get_inventory():
-    return jsonify(inventory_data)
+    return jsonify({"items": raw_inventory_data})
 
-# ✅ Static Image for visual context
 IMAGE_PATH = "food.jpg"
 GEMINI_API_KEY = "AIzaSyBCWOXDVefsY7f8Q1d9N1HN3Mo6RA1b5eU"  # Replace with your actual key
 
-# ✅ Gemini model setup
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -40,45 +44,27 @@ def index():
 
 @app.route("/generate_dishes", methods=["POST"])
 def generate_dishes():
-    global inventory_data
+    global raw_inventory_data
     data = request.get_json()
     category = data.get("category")
 
     if not category:
         return jsonify({"success": False, "error": "❌ No category provided"}), 400
 
-    # ✅ Extract fresh ingredients with optional rotting days info
-    available_ingredients = []
-    rotting_info = []
-    for cat_name, items in inventory_data.items():
-        for item, freshness_info in items.items():
-            if not isinstance(freshness_info, dict):
-                continue
+    if not raw_inventory_data:
+        return jsonify({"success": False, "error": "❌ No inventory data available"}), 400
 
-            fresh_count = freshness_info.get("freshness above 80%", 0)
-            if fresh_count > 0:
-                available_ingredients.append(item)
+    # ✅ Prepare prompt with raw ESP inventory
+    esp_data_string = "\n\n".join(raw_inventory_data)
 
-                # Optional: capture rotting estimate if provided
-                days = freshness_info.get("estimated_rotting_days")
-                if days is not None:
-                    rotting_info.append(f"{item} (rots in {days} days)")
-                else:
-                    rotting_info.append(f"{item}")
-
-    if not available_ingredients:
-        return jsonify({"success": False, "error": "❌ No fresh ingredients available"}), 400
-
-    # ✅ Encode image as base64
     with open(IMAGE_PATH, "rb") as image_file:
         image_base64 = base64.b64encode(image_file.read()).decode("utf-8")
 
-    # ✅ Gemini prompt with rotting estimates included
     prompt = (
-        f"I have the following fresh ingredients with estimated time before rotting:\n"
-        f"{', '.join(rotting_info)}.\n"
-        f"Suggest 10 {category} cuisine dishes that can be made quickly using these ingredients. "
-        f"Focus on using items that may rot sooner. Provide only dish names and short descriptions."
+        f"I have the following inventory sent from an ESP32 device with fruits/vegetables in raw format.\n"
+        f"Each item contains name, count, freshness %, and estimated rotting days.\n\n"
+        f"{esp_data_string}\n\n"
+        f"Suggest 10 {category} cuisine dishes that can be made quickly using these items, focusing more on items that may rot sooner. Provide only dish names and short descriptions."
     )
 
     try:
