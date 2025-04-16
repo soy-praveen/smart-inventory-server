@@ -92,7 +92,18 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.fruits && Object.keys(data.fruits).length > 0) {
             htmlContent += `<div class="inventory-section"><h3>Fruits Count</h3>`;
             for (let fruit in data.fruits) {
-                htmlContent += `<p>${fruit}: Fresh (>80%) - ${data.fruits[fruit]["freshness above 80%"]}, Medium (>50%) - ${data.fruits[fruit]["freshness above 50%"]}, Rotten - ${data.fruits[fruit]["cannot be used for cooking"]}</p>`;
+                const fruitData = data.fruits[fruit];
+                htmlContent += `<p>${fruit}: 
+                    Fresh (>80%) - ${fruitData["freshness above 80%"]}, 
+                    Medium (>50%) - ${fruitData["freshness above 50%"]}, 
+                    Rotten - ${fruitData["cannot be used for cooking"]}`;
+
+                // ✅ Include estimated rotting days if available
+                if ("estimated_rotting_days" in fruitData) {
+                    htmlContent += `, Est. Rot in ${fruitData["estimated_rotting_days"]} day(s)`;
+                }
+
+                htmlContent += `</p>`;
             }
             htmlContent += `</div>`;
         }
@@ -101,10 +112,21 @@ document.addEventListener("DOMContentLoaded", function () {
         if (data.vegetables && Object.keys(data.vegetables).length > 0) {
             htmlContent += `<div class="inventory-section"><h3>Vegetables Count</h3>`;
             for (let vegetable in data.vegetables) {
-                htmlContent += `<p>${vegetable}: Fresh (>80%) - ${data.vegetables[vegetable]["freshness above 80%"]}, Medium (>50%) - ${data.vegetables[vegetable]["freshness above 50%"]}</p>`;
+                const vegData = data.vegetables[vegetable];
+                htmlContent += `<p>${vegetable}: 
+                    Fresh (>80%) - ${vegData["freshness above 80%"]}, 
+                    Medium (>50%) - ${vegData["freshness above 50%"]}`;
+
+                // ✅ Include estimated rotting days if available
+                if ("estimated_rotting_days" in vegData) {
+                    htmlContent += `, Est. Rot in ${vegData["estimated_rotting_days"]} day(s)`;
+                }
+
+                htmlContent += `</p>`;
             }
             htmlContent += `</div>`;
         }
+
 
         inventoryContainer.innerHTML = htmlContent;
     }
