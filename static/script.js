@@ -1,3 +1,4 @@
+// Background Canvas Animation
 const canvas = document.getElementById("backgroundCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -17,23 +18,6 @@ for (let i = 0; i < numDots; i++) {
         dy: (Math.random() - 0.5) * 2
     });
 }
-
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelector(".refresh-button").addEventListener("click", function () {
-        fetch("/trigger_client", { method: "POST" })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                if (data.success) {
-                    setTimeout(() => {
-                        document.querySelector(".card img").src = "/get_image?" + new Date().getTime();
-                    }, 2000);
-                }
-            })
-            .catch(error => console.error("❌ Error:", error));
-    });
-});
-
 
 function drawDots() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -69,76 +53,164 @@ window.addEventListener("resize", () => {
 });
 
 animate();
-document.addEventListener("DOMContentLoaded", function () {
+
+// Inventory Management
+document.addEventListener("DOMContentLoaded", function() {
     fetchInventoryData(); // Load inventory when page loads
-
-    // Function to fetch inventory data from backend
-    function fetchInventoryData() {
-        fetch("/get_inventory")
-            .then(response => response.json())
-            .then(data => {
-                updateInventoryUI(data);
-            })
-            .catch(error => console.error("Error fetching inventory:", error));
-    }
-
-    // Function to update UI with dynamic inventory
-    // Function to update UI with dynamic inventory
-    function updateInventoryUI(data) {
-        const inventoryContainer = document.getElementById("inventoryData");
-
-        let htmlContent = `<h2>Inventory</h2>`;
-
-        // Check if the response contains the correct structure
-        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-            data.items.forEach(item => {
-                htmlContent += `<pre>${item}</pre><hr/>`;
-            });
-        } else {
-            htmlContent += "<p>No inventory data available.</p>";
-        }
-
-        inventoryContainer.innerHTML = htmlContent;
-    }
-
     
+    // Event listener for dish generation
+    const generateButton = document.getElementById("generateButton");
+    if (generateButton) {
+        generateButton.addEventListener("click", function() {
+            const foodCategory = document.getElementById("foodCategory").value;
+            if (!foodCategory) {
+                alert("❌ Please select a food category first!");
+                return;
+            }
 
-    // Refresh inventory data every 5 seconds
+            generateDishes(foodCategory);
+        });
+    }
+    
+    // Set up inventory refresh interval
     setInterval(fetchInventoryData, 5000);
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const generateButton = document.getElementById("generateButton");
-    const foodCategory = document.getElementById("foodCategory");
-    const dishesContainer = document.getElementById("dishesContainer");
-
-    generateButton.addEventListener("click", function () {
-        const selectedCategory = foodCategory.value;
-        if (!selectedCategory) {
-            alert("❌ Please select a food category first!");
-            return;
-        }
-
-        fetch("/generate_dishes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ category: selectedCategory })
-        })
+// Function to fetch inventory data from backend
+function fetchInventoryData() {
+    fetch("/get_inventory")
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                // ✅ Display the generated dishes
-                dishesContainer.innerHTML = "<h2>Suggested Dishes:</h2>";
-                data.dishes.forEach(dish => {
-                    const dishElement = document.createElement("p");
-                    dishElement.textContent = dish;
-                    dishesContainer.appendChild(dishElement);
-                });
-                dishesContainer.classList.remove("hidden");
-            } else {
-                alert(data.error);
-            }
+            processInventoryData(data);
         })
-        .catch(error => console.error("Error fetching dishes:", error));
+        .catch(error => {
+            console.error("Error fetching inventory:", error);
+            document.getElementById("inventoryItems").innerHTML = 
+                '<div class="loading-message">Failed to load inventory. Please try again later.</div>';
+        });
+}
+
+// Function to generate dishes based on selected category
+function generateDishes(category) {
+    fetch("/generate_dishes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: category })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Display the generated dishes
+            const dishesContainer = document.getElementById("dishesContainer");
+            dishesContainer.innerHTML = "<h2>Suggested Dishes:</h2>";
+            data.dishes.forEach(dish => {
+                const dishElement = document.createElement("p");
+                dishElement.textContent = dish;
+                dishesContainer.appendChild(dishElement);
+            });
+            dishesContainer.classList.remove("hidden");
+        } else {
+            alert(data.error || "Error generating dishes");
+        }
+    })
+    .catch(error => console.error("Error fetching dishes:", error));
+}
+
+// Function to process and display inventory data
+function processInventoryData(data) {
+    const inventoryContainer = document.getElementById("inventoryItems");
+    
+    // Check if data has the expected structure
+    if (!data || !data.items || !Array.isArray(data.items)) {
+        inventoryContainer.innerHTML = '<div class="loading-message">No inventory data available</div>';
+        return;
+    }
+    
+    // Parse the inventory data
+    try {
+        let parsedItems = [];
+        
+        data.items.forEach(item => {
+            // Extract inventory item details using regex patterns
+            const nameMatch = item.match(/Name of fruit: (.+)/);
+            const countMatch = item.match(/Count: (\d+)/);
+            const freshnessMatch = item.match(/Freshness rate \(1-100\): (\d+)/);
+            const expiryMatch = item.match(/Least estimated days before rotting: (\d+)/);
+            
+            if (nameMatch && countMatch && freshnessMatch && expiryMatch) {
+                parsedItems.push({
+                    name: nameMatch[1].trim(),
+                    count: parseInt(countMatch[1]),
+                    freshness: parseInt(freshnessMatch[1]),
+                    expiry: parseInt(expiryMatch[1])
+                });
+            }
+        });
+        
+        // Render the inventory items
+        renderInventoryItems(parsedItems);
+    } catch (error) {
+        console.error("Error parsing inventory data:", error);
+        inventoryContainer.innerHTML = '<div class="loading-message">Error processing inventory data</div>';
+    }
+}
+
+// Render inventory items with countdown timer visualization
+function renderInventoryItems(items) {
+    const inventoryContainer = document.getElementById("inventoryItems");
+    
+    if (!items || items.length === 0) {
+        inventoryContainer.innerHTML = '<div class="loading-message">No items in inventory</div>';
+        return;
+    }
+    
+    let html = '';
+    
+    // Sort items by expiry days (ascending) so most urgent items appear first
+    items.sort((a, b) => a.expiry - b.expiry);
+    
+    items.forEach((item, index) => {
+        // Calculate urgency class
+        let urgencyClass = '';
+        let timerBgColor = '';
+        let timerAnimation = '';
+        
+        if (item.expiry <= 1) {
+            urgencyClass = 'urgent';
+            timerBgColor = '#ff3d3d';
+            timerAnimation = 'countdown-pulse-urgent 1.5s infinite';
+        } else if (item.expiry <= 3) {
+            urgencyClass = 'warning';
+            timerBgColor = '#ff9f1c';
+            timerAnimation = 'countdown-pulse-warning 2s infinite';
+        } else {
+            urgencyClass = 'normal';
+            timerBgColor = '#4CAF50';
+        }
+        
+        // Create countdown segments (one segment per day)
+        let countdownHtml = '';
+        for (let i = 0; i < 7; i++) {
+            let segmentClass = i < item.expiry ? 'countdown-segment active' : 'countdown-segment';
+            countdownHtml += `<div class="${segmentClass}"></div>`;
+        }
+        
+        html += `
+        <div class="fruit-item ${urgencyClass}">
+            <div class="fruit-number">${index + 1}</div>
+            <div class="fruit-name">${item.name}</div>
+            <div class="freshness">${item.freshness}%</div>
+            <div class="count-box">×${item.count}</div>
+            <div class="expiry-timer">
+                <div class="timer-icon">⏱️</div>
+                <div class="countdown-container">
+                    ${countdownHtml}
+                </div>
+                <div class="timer-text" style="color:${timerBgColor}; animation: ${timerAnimation}">${item.expiry}d</div>
+            </div>
+        </div>
+        `;
     });
-});
+    
+    inventoryContainer.innerHTML = html;
+}
