@@ -1,23 +1,248 @@
 body {
     margin: 0;
-    overflow-x: hidden; /* Only hide horizontal scrolling */
-    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden;
+    overflow-y: auto;
     background: linear-gradient(to bottom, #0a0a33, #000000);
-    min-height: 100vh; /* Ensure the body can grow */
-}
-
-/* Hide scrollbar for WebKit browsers */
-body::-webkit-scrollbar {
+    min-height: 100vh;
+    font-family: 'Averia Serif Libre', sans-serif;
+    color: white;
+  }
+  
+  /* Hide scrollbar for WebKit browsers */
+  body::-webkit-scrollbar {
     display: none;
-}
-
-/* Hide scrollbar for Firefox */
-body {
+  }
+  
+  /* Hide scrollbar for Firefox */
+  body {
     scrollbar-width: none;
-    -ms-overflow-style: none; /* For IE/Edge */
-}
-
-.food-dropdown {
+    -ms-overflow-style: none;
+  }
+  
+  /* Background Canvas */
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+  }
+  
+  /* Header Styles */
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Averia Serif Libre', serif;
+    color: white;
+    text-align: center;
+    width: 100%;
+    margin-top: 1%;
+    margin-bottom: 2%;
+    position: relative;
+    gap: 10px;
+  }
+  
+  .welcome span {
+    font-size: 18px;
+    font-weight: 400;
+  }
+  
+  /* Inventory Container */
+  .inventory-container {
+    max-width: 500px;
+    margin: 20px auto;
+    background: linear-gradient(145deg, #1a1a2e, #22223b);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3),
+                -10px -10px 30px rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .inventory-header {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #6A0DAD, #1E90FF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: bold;
+  }
+  
+  .loading-message {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  /* Fruit Item Styles */
+  .fruit-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .fruit-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(106, 13, 173, 0.3);
+  }
+  
+  /* Urgency classes */
+  .fruit-item.urgent {
+    background: rgba(255, 61, 61, 0.15);
+    border-left: 4px solid #ff3d3d;
+  }
+  
+  .fruit-item.warning {
+    background: rgba(255, 159, 28, 0.1);
+    border-left: 4px solid #ff9f1c;
+  }
+  
+  .fruit-item.normal {
+    border-left: 4px solid #4CAF50;
+  }
+  
+  .fruit-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #6A0DAD, #1E90FF);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: bold;
+  }
+  
+  .fruit-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
+  .freshness {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-left: auto;
+    margin-right: 15px;
+  }
+  
+  .count-box {
+    background: linear-gradient(145deg, #6A0DAD, #1E90FF);
+    border-radius: 10px;
+    padding: 5px 15px;
+    font-weight: bold;
+    margin-left: 10px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .expiry-timer {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    width: 100%;
+    padding-left: 42px;
+  }
+  
+  .timer-icon {
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  
+  /* New Countdown Timer Styles */
+  .countdown-container {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    height: 8px;
+    align-items: center;
+    margin-right: 10px;
+  }
+  
+  .countdown-segment {
+    height: 8px;
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+  }
+  
+  .countdown-segment.active {
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  }
+  
+  .urgent .countdown-segment.active {
+    background: linear-gradient(90deg, #ff3d3d, #ff6b6b);
+    animation: pulse-urgent 1.5s infinite;
+  }
+  
+  .warning .countdown-segment.active {
+    background: linear-gradient(90deg, #ff9f1c, #ffbf69);
+  }
+  
+  .timer-text {
+    font-size: 14px;
+    min-width: 24px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  /* Animations */
+  @keyframes pulse-urgent {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  
+  @keyframes countdown-pulse-urgent {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes countdown-pulse-warning {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  
+  /* Food Container Styles */
+  .food-container {
+    width: 80%;
+    max-width: 400px;
+    background: linear-gradient(145deg, #1a1a2e, #22223b);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3),
+                -10px -10px 30px rgba(255, 255, 255, 0.05);
+    margin: 20px auto;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .food-dropdown {
     width: 100%;
     padding: 12px;
     border: none;
@@ -30,47 +255,10 @@ body {
                 inset -5px -5px 10px rgba(255, 255, 255, 0.05);
     appearance: none;
     cursor: pointer;
-}
-
-#dishesContainer {
-    width: 90%;
-    max-width: 400px;
-    background: linear-gradient(145deg, #1a1a2e, #22223b);
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3),
-                -10px -10px 30px rgba(255, 255, 255, 0.05);
-    margin: 20px auto;
-    color: white;
-}
-
-.dish-item {
-    margin: 10px 0;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-}
-
-.hidden {
-    display: none;
-}
-
-/* Warning message */
-#warningMessage {
-    color: red;
-    font-size: 14px;
-    font-weight: bold;
-    margin-top: 10px;
-    display: none;
-}
-
-.hidden {
-    display: none;
-}
-
-/* Claim food Button */
-.claim-button {
+    margin-bottom: 15px;
+  }
+  
+  .claim-button {
     background: linear-gradient(145deg, #6A0DAD, #1E90FF);
     color: white;
     font-size: 16px;
@@ -79,23 +267,22 @@ body {
     border-radius: 10px;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    margin-top: 15px;
+    margin-top: 5px;
     width: 100%;
-}
-
-/* Hover Effect */
-.claim-button:hover {
+  }
+  
+  .claim-button:hover {
     transform: translateY(-3px);
     background: linear-gradient(145deg, #7B1FA2, #1C86EE);
-}
-
-/* Click Effect */
-.claim-button:active {
+  }
+  
+  .claim-button:active {
     transform: translateY(2px) scale(0.98);
     box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.3);
-}
-.food-container {
-    width: 80%;
+  }
+  
+  #dishesContainer {
+    width: 90%;
     max-width: 400px;
     background: linear-gradient(145deg, #1a1a2e, #22223b);
     padding: 20px;
@@ -104,145 +291,9 @@ body {
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.3),
                 -10px -10px 30px rgba(255, 255, 255, 0.05);
     margin: 20px auto;
-    position: relative; /* Keep it in normal document flow */
-    z-index: 1; /* Lower than the popup */
-    margin-top: 30px; /* Adds space below inventory */
-}
-
-/* Fixing the input box */
-.food-input {
-    width: 90%;
-    padding: 12px;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    text-align: center;
-    outline: none;
-    background: #2a2a40;
     color: white;
-    box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.3),
-                inset -5px -5px 10px rgba(255, 255, 255, 0.05);
-    position: relative;
-    z-index: 10; /* Ensures it's on top */
-    pointer-events: auto; /* Allows interaction */
-}
-
-/* Ensuring canvas doesn't block interactions */
-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1; /* Push it to the background */
-}
-
-.card p {
-    color: white;
-    font-size: 16px;
-    margin-top: 10px;
-}
-.header-container {
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    justify-content: center;
-    align-items: center; /* Center everything */
-    text-align: center;
-    width: 100%;
-    margin-top: 0px;
-}
-
-.welcome {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Averia Serif Libre', serif;
-    color: white;
-    text-align: center;
-    width: 100%;
-    margin-top: 1%;
-    margin-bottom: 2%;
-    position: relative;
-    left: 0;
-    gap: 10px; /* Add spacing between elements */
-}
-
-.welcome h1 {
-    font-size: 48px; /* Title size */
-    font-weight: 700;
-    margin: 0; /* Remove default margin */
-}
-
-.welcome p {
-    font-size: 24px; /* Subtitle size */
-    font-weight: 700;
-    margin: 0; /* Remove default margin */
-}
-
-
-
-/* 🔹 Blur Background When Popup is Open */
-.blurred::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(90%);
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 98;
-}
-
-/* 🌟 Glassmorphic Popup */
-.popup-container {
+  }
+  
+  .hidden {
     display: none;
-    position: relative; /* Change from fixed to relative */
-    top: auto; /* Remove fixed positioning */
-    left: auto;
-    transform: none; /* Remove centering transform */
-    margin: 20px auto; /* Ensure spacing */
-    width: 350px;
-    max-height: 80vh; /* Prevent overflow */
-    background: linear-gradient(135deg, rgba(138, 43, 226, 0.4), rgba(0, 0, 255, 0.4)); /* Purple-Blue Gradient */
-    backdrop-filter: blur(15px);
-    border-radius: 15px;
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    text-align: center;
-    color: white;
-    font-family: Arial, sans-serif;
-    z-index: 99;
-    overflow-y: auto; /* Enable scrolling */
-    margin-bottom: 50px; /* Ensures there's space below the inventory */
-}
-.popup-container.active {
-    display: block;
-}
-/* Hide scrollbar for all browsers */
-.popup-container::-webkit-scrollbar {
-    display: none;
-}
-
-.popup-container {
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none; /* For IE/Edge */
-}
-
-
-/* 📦 Inventory Sections */
-.inventory-section {
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-}
-
-/* 🖼️ Image Styling */
-img {
-    width: 100%;
-    border-radius: 10px;
-    margin-top: 10px;
-}
-
+  }
